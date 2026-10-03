@@ -1,0 +1,2739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PINEAPPLE'S RNG</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --black: #050505;
+    --black2: #0c0c0c;
+    --black3: #151515;
+    --line: #292929;
+    --white: #eeeeee;
+    --gray: #888;
+    --yellow: #ffd83d;
+    --yellow2: #ffbf00;
+    --red: #ff5757;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,216,61,.05),
+            transparent 35%
+        ),
+        var(--black);
+
+    color: var(--white);
+
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+
+    overflow-x: hidden;
+}
+
+.container {
+    width: min(760px, calc(100% - 26px));
+    margin: auto;
+    padding: 42px 0 70px;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo {
+    font-size: 19px;
+    color: #555;
+    letter-spacing: 6px;
+    margin-bottom: 14px;
+    user-select: none;
+}
+
+.title {
+    margin: 0;
+
+    font-size: clamp(29px, 8vw, 48px);
+
+    font-weight: 900;
+    letter-spacing: 3px;
+
+    color: #f2f2f2;
+}
+
+.title span {
+    color: var(--yellow);
+}
+
+.header-line {
+    width: 80px;
+    height: 1px;
+
+    background: #444;
+
+    margin: 18px auto 0;
+}
+
+
+/* =========================================
+   NAV
+========================================= */
+
+.nav {
+    display: flex;
+    gap: 1px;
+
+    margin-bottom: 18px;
+
+    background: var(--line);
+    border: 1px solid var(--line);
+}
+
+.nav button {
+    flex: 1;
+
+    border: 0;
+
+    padding: 15px 10px;
+
+    background: var(--black2);
+    color: #777;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.nav button:hover {
+    color: #ccc;
+    background: #151515;
+}
+
+.nav button.active {
+    background: #1d1d1d;
+
+    color: var(--yellow);
+
+    box-shadow:
+        inset 0 -2px 0 var(--yellow);
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.card {
+    background: rgba(14,14,14,.96);
+
+    border: 1px solid var(--line);
+
+    padding: 22px;
+
+    margin-bottom: 14px;
+}
+
+.card h2 {
+    margin: 0 0 18px;
+
+    font-size: 18px;
+    letter-spacing: .5px;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+input,
+select {
+    border: 1px solid #333;
+
+    background: #0a0a0a;
+    color: #eee;
+
+    border-radius: 4px;
+
+    padding: 11px 12px;
+
+    font: inherit;
+
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--yellow);
+}
+
+
+/* =========================================
+   ADD
+========================================= */
+
+.add-box {
+    display: flex;
+    gap: 7px;
+}
+
+.add-box input {
+    flex: 1;
+}
+
+.add-box button {
+    border: 1px solid #444;
+
+    background: var(--yellow);
+    color: #080808;
+
+    padding: 10px 17px;
+
+    border-radius: 4px;
+
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.add-box button:hover {
+    background: #ffe36c;
+}
+
+
+/* =========================================
+   PARTICIPANTS
+========================================= */
+
+.player-count {
+    margin: 16px 0 9px;
+
+    color: #666;
+
+    font-size: 13px;
+
+    letter-spacing: 1px;
+}
+
+.players {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 7px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 8px 10px;
+
+    background: #151515;
+
+    border: 1px solid #292929;
+
+    color: #ccc;
+
+    border-radius: 4px;
+
+    animation: playerIn .2s ease;
+}
+
+@keyframes playerIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.player button {
+    border: 0;
+
+    background: none;
+
+    color: #666;
+
+    cursor: pointer;
+
+    padding: 0;
+}
+
+.player button:hover {
+    color: var(--red);
+}
+
+
+/* =========================================
+   SETTINGS
+========================================= */
+
+.setting {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin: 12px 0;
+
+    color: #bbb;
+}
+
+.team-count-input {
+    width: 90px;
+    text-align: center;
+}
+
+.team-sizes {
+    display: grid;
+
+    gap: 8px;
+
+    margin-top: 16px;
+}
+
+.team-size-row {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px 12px;
+
+    background: #121212;
+
+    border: 1px solid #242424;
+}
+
+.team-size-input {
+    width: 75px;
+    text-align: center;
+}
+
+
+/* =========================================
+   BAN
+========================================= */
+
+.ban-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin: 9px 0;
+}
+
+.ban-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.ban-row button {
+    border: 0;
+
+    background: transparent;
+
+    color: #777;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
+.ban-row button:hover {
+    color: var(--red);
+}
+
+.add-ban {
+    margin-top: 8px;
+
+    border: 1px solid #333;
+
+    background: #111;
+
+    color: #aaa;
+
+    padding: 9px 13px;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.add-ban:hover {
+    color: white;
+    border-color: var(--yellow);
+}
+
+
+/* =========================================
+   MAIN BUTTON
+========================================= */
+
+.main-button {
+    width: 100%;
+
+    border: 1px solid #555;
+
+    background: var(--yellow);
+    color: #050505;
+
+    padding: 15px;
+
+    font-size: 16px;
+
+    font-weight: 900;
+
+    letter-spacing: 1px;
+
+    border-radius: 3px;
+
+    cursor: pointer;
+
+    transition: .15s;
+}
+
+.main-button:hover {
+    background: #ffe36c;
+
+    transform: translateY(-1px);
+}
+
+.main-button:active {
+    transform: translateY(1px);
+}
+
+.main-button:disabled {
+    opacity: .45;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================
+   TEAM RESULT
+========================================= */
+
+.result {
+    display: grid;
+    gap: 9px;
+}
+
+.team {
+    background: #111;
+
+    border: 1px solid #292929;
+
+    padding: 16px;
+
+    animation:
+        resultIn .4s ease both;
+}
+
+@keyframes resultIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.team h3 {
+    margin: 0 0 11px;
+
+    color: var(--yellow);
+
+    font-size: 15px;
+
+    letter-spacing: 1px;
+}
+
+.member {
+    background: #191919;
+
+    border-left: 2px solid #333;
+
+    padding: 9px 11px;
+
+    margin-top: 5px;
+
+    color: #ccc;
+}
+
+
+/* =========================================
+   PICK ONE
+========================================= */
+
+.draw-box {
+    text-align: center;
+
+    position: relative;
+}
+
+.checkbox {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    color: #888;
+
+    font-size: 14px;
+}
+
+.checkbox input {
+    accent-color: var(--yellow);
+}
+
+
+/* =========================================
+   슬롯
+========================================= */
+
+.slot-window {
+    position: relative;
+
+    height: 210px;
+
+    margin: 22px 0;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,.94),
+            transparent 27%,
+            transparent 73%,
+            rgba(0,0,0,.94)
+        ),
+        #090909;
+
+    border: 1px solid #292929;
+}
+
+
+/*
+    중요:
+    중앙선 없음.
+    중앙 박스 없음.
+    중앙 판정 위치는 완전히 보이지 않는다.
+*/
+
+.slot-track {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    will-change: transform;
+}
+
+.slot-item {
+    height: 70px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 18px;
+
+    font-size:
+        clamp(25px, 7vw, 42px);
+
+    font-weight: 900;
+
+    letter-spacing: 1px;
+
+    color: #777;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    transition:
+        transform .55s cubic-bezier(.2,.8,.2,1),
+        opacity .55s ease,
+        color .55s ease,
+        text-shadow .55s ease;
+}
+
+
+/* 당첨자 */
+
+.slot-item.final-winner {
+    color: var(--yellow);
+
+    transform: scale(1.16);
+
+    opacity: 1;
+
+    text-shadow:
+        0 0 15px
+        rgba(255,216,61,.4);
+}
+
+
+/* 주변 이름 */
+
+.slot-item.final-other {
+    transform: scale(.82);
+
+    opacity: .25;
+}
+
+
+/* 걸쳐 있는 순간 */
+
+.slot-item.edge-winner {
+    color: var(--yellow);
+
+    opacity: .72;
+
+    transform: scale(1.02);
+}
+
+
+/* =========================================
+   메시지
+========================================= */
+
+.draw-message {
+    min-height: 22px;
+
+    margin-top: 12px;
+}
+
+.error {
+    color: var(--red);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    margin-top: 11px;
+}
+
+.success {
+    color: var(--yellow);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    margin-top: 12px;
+}
+
+
+/* =========================================
+   다시 시작
+========================================= */
+
+.restart-button {
+    margin-top: 10px;
+
+    width: 100%;
+
+    padding: 12px;
+
+    background: transparent;
+
+    color: #aaa;
+
+    border: 1px solid #333;
+
+    cursor: pointer;
+
+    border-radius: 3px;
+}
+
+.restart-button:hover {
+    color: white;
+
+    border-color: var(--yellow);
+}
+
+
+/* =========================================
+   색종이
+========================================= */
+
+.confetti-layer {
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    overflow: hidden;
+
+    z-index: 9999;
+}
+
+.confetti {
+    position: absolute;
+
+    top: -25px;
+
+    width: 8px;
+    height: 13px;
+
+    opacity: 1;
+
+    animation:
+        confettiFall
+        var(--fall-time)
+        cubic-bezier(.18,.72,.25,1)
+        forwards;
+}
+
+@keyframes confettiFall {
+
+    0% {
+        transform:
+            translate3d(0, 0, 0)
+            rotate(0deg);
+
+        opacity: 1;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translate3d(
+                var(--x),
+                calc(100vh + 80px),
+                0
+            )
+            rotate(var(--rotate));
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================================
+   HIDDEN
+========================================= */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 500px) {
+
+    .container {
+        width: calc(100% - 16px);
+
+        padding-top: 27px;
+    }
+
+    .title {
+        letter-spacing: 1px;
+    }
+
+    .logo {
+        font-size: 17px;
+
+        letter-spacing: 5px;
+    }
+
+    .card {
+        padding: 17px;
+    }
+
+    .ban-row {
+        flex-wrap: wrap;
+    }
+
+    .ban-row select {
+        min-width:
+            calc(50% - 24px);
+    }
+
+    .slot-window {
+        height: 190px;
+    }
+
+    .slot-item {
+        height: 63px;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+    <header class="header">
+
+        <div class="logo">
+            PINEAPPLE
+        </div>
+
+        <h1 class="title">
+            PINEAPPLE'S <span>RNG</span>
+        </h1>
+
+        <div class="header-line"></div>
+
+    </header>
+
+
+    <!-- =====================================
+         NAV
+    ====================================== -->
+
+    <nav class="nav">
+
+        <button
+            id="teamTab"
+            class="active"
+            onclick="showPage('team')">
+
+            팀 랜덤 배정
+
+        </button>
+
+        <button
+            id="drawTab"
+            onclick="showPage('draw')">
+
+            한 명 뽑기
+
+        </button>
+
+    </nav>
+
+
+    <!-- =====================================
+         TEAM RANDOMIZER
+    ====================================== -->
+
+    <section id="teamPage">
+
+        <!-- 참가자 -->
+
+        <div class="card">
+
+            <h2>참가자</h2>
+
+            <div class="add-box">
+
+                <input
+                    id="teamPlayerInput"
+                    placeholder="이름 입력"
+                    maxlength="30"
+                    onkeydown="enterAdd(event, 'team')">
+
+                <button
+                    onclick="addSharedPlayer('team')">
+
+                    추가
+
+                </button>
+
+            </div>
+
+            <div
+                id="teamPlayerCount"
+                class="player-count">
+            </div>
+
+            <div
+                id="teamPlayers"
+                class="players">
+            </div>
+
+        </div>
+
+
+        <!-- 팀 설정 -->
+
+        <div class="card">
+
+            <h2>팀 설정</h2>
+
+            <div class="setting">
+
+                <span>팀 수</span>
+
+                <input
+                    id="teamCount"
+                    class="team-count-input"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value="2"
+                    onchange="teamCountChanged()">
+
+            </div>
+
+            <div
+                id="teamSizes"
+                class="team-sizes">
+            </div>
+
+        </div>
+
+
+        <!-- 같은 팀 금지 -->
+
+        <div class="card">
+
+            <h2>같은 팀 금지</h2>
+
+            <div id="banList"></div>
+
+            <button
+                class="add-ban"
+                onclick="addBan()">
+
+                + 제한 추가
+
+            </button>
+
+        </div>
+
+
+        <!-- 팀 배정 -->
+
+        <div class="card">
+
+            <button
+                class="main-button"
+                onclick="makeTeams()">
+
+                팀 나누기
+
+            </button>
+
+            <div
+                id="teamError"
+                class="error">
+            </div>
+
+        </div>
+
+
+        <!-- 결과 -->
+
+        <div
+            id="teamResultCard"
+            class="card hidden">
+
+            <h2>결과</h2>
+
+            <div
+                id="teamResult"
+                class="result">
+            </div>
+
+            <br>
+
+            <button
+                class="main-button"
+                onclick="makeTeams()">
+
+                다시 나누기
+
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================
+         PICK ONE
+    ====================================== -->
+
+    <section
+        id="drawPage"
+        class="hidden">
+
+        <!-- 참가자 -->
+
+        <div class="card">
+
+            <h2>참가자</h2>
+
+            <div class="add-box">
+
+                <input
+                    id="drawPlayerInput"
+                    placeholder="이름 입력"
+                    maxlength="30"
+                    onkeydown="enterAdd(event, 'draw')">
+
+                <button
+                    onclick="addSharedPlayer('draw')">
+
+                    추가
+
+                </button>
+
+            </div>
+
+            <div
+                id="drawPlayerCount"
+                class="player-count">
+            </div>
+
+            <div
+                id="drawPlayers"
+                class="players">
+            </div>
+
+        </div>
+
+
+        <!-- 뽑기 -->
+
+        <div class="card draw-box">
+
+            <h2>한 명 뽑기</h2>
+
+            <div class="checkbox">
+
+                <input
+                    type="checkbox"
+                    id="noRepeat">
+
+                <label for="noRepeat">
+                    중복 없이 뽑기
+                </label>
+
+            </div>
+
+
+            <!-- 슬롯 -->
+
+            <div
+                class="slot-window"
+                id="slotWindow">
+
+                <div
+                    class="slot-track"
+                    id="slotTrack">
+                </div>
+
+            </div>
+
+
+            <button
+                class="main-button"
+                id="drawButton"
+                onclick="drawOne()">
+
+                한 명 뽑기
+
+            </button>
+
+
+            <div
+                id="drawMessage"
+                class="draw-message">
+            </div>
+
+
+            <button
+                id="restartDrawButton"
+                class="restart-button hidden"
+                onclick="restartDraw()">
+
+                다시 시작
+
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   공유 참가자
+========================================= */
+
+let players = [];
+
+
+/* =========================================
+   뽑기 상태
+========================================= */
+
+let usedPlayers = [];
+
+let isDrawing = false;
+
+
+/* =========================================
+   페이지 전환
+========================================= */
+
+function showPage(page) {
+
+    const teamPage =
+        document.getElementById("teamPage");
+
+    const drawPage =
+        document.getElementById("drawPage");
+
+    const teamTab =
+        document.getElementById("teamTab");
+
+    const drawTab =
+        document.getElementById("drawTab");
+
+
+    if (page === "team") {
+
+        teamPage.classList.remove("hidden");
+
+        drawPage.classList.add("hidden");
+
+        teamTab.classList.add("active");
+
+        drawTab.classList.remove("active");
+
+    } else {
+
+        teamPage.classList.add("hidden");
+
+        drawPage.classList.remove("hidden");
+
+        teamTab.classList.remove("active");
+
+        drawTab.classList.add("active");
+
+    }
+}
+
+
+/* =========================================
+   참가자 추가
+========================================= */
+
+function addSharedPlayer(source) {
+
+    const input =
+        document.getElementById(
+            source === "team"
+                ? "teamPlayerInput"
+                : "drawPlayerInput"
+        );
+
+
+    const name =
+        input.value.trim();
+
+
+    if (!name) return;
+
+
+    if (players.includes(name)) {
+
+        alert(
+            "이미 등록된 이름입니다."
+        );
+
+        return;
+    }
+
+
+    players.push(name);
+
+    input.value = "";
+
+
+    renderPlayers();
+
+    updateBanSelects();
+
+    autoSetTeamSizes();
+
+}
+
+
+/* =========================================
+   참가자 삭제
+========================================= */
+
+function removeSharedPlayer(index) {
+
+    const removed =
+        players[index];
+
+
+    players.splice(index, 1);
+
+
+    usedPlayers =
+        usedPlayers.filter(
+            name =>
+                name !== removed &&
+                players.includes(name)
+        );
+
+
+    renderPlayers();
+
+    updateBanSelects();
+
+    autoSetTeamSizes();
+
+}
+
+
+/* =========================================
+   참가자 표시
+========================================= */
+
+function renderPlayers() {
+
+    const teamList =
+        document.getElementById(
+            "teamPlayers"
+        );
+
+    const drawList =
+        document.getElementById(
+            "drawPlayers"
+        );
+
+
+    teamList.innerHTML = "";
+
+    drawList.innerHTML = "";
+
+
+    players.forEach(
+        (player, index) => {
+
+            const teamDiv =
+                document.createElement(
+                    "div"
+                );
+
+            teamDiv.className =
+                "player";
+
+            teamDiv.innerHTML = `
+                ${escapeHtml(player)}
+
+                <button
+                    onclick="removeSharedPlayer(${index})">
+                    ×
+                </button>
+            `;
+
+            teamList.appendChild(
+                teamDiv
+            );
+
+
+            const drawDiv =
+                document.createElement(
+                    "div"
+                );
+
+            drawDiv.className =
+                "player";
+
+            drawDiv.innerHTML = `
+                ${escapeHtml(player)}
+
+                <button
+                    onclick="removeSharedPlayer(${index})">
+                    ×
+                </button>
+            `;
+
+            drawList.appendChild(
+                drawDiv
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "teamPlayerCount"
+    ).textContent =
+        `${players.length}명`;
+
+
+    document.getElementById(
+        "drawPlayerCount"
+    ).textContent =
+        `${players.length}명`;
+
+}
+
+
+/* =========================================
+   Enter 추가
+========================================= */
+
+function enterAdd(event, source) {
+
+    if (event.key === "Enter") {
+
+        addSharedPlayer(source);
+
+    }
+
+}
+
+
+/* =========================================
+   팀 수 변경
+========================================= */
+
+function teamCountChanged() {
+
+    const input =
+        document.getElementById(
+            "teamCount"
+        );
+
+
+    let count =
+        Number(input.value);
+
+
+    if (count < 1) {
+
+        count = 1;
+
+        input.value = 1;
+
+    }
+
+
+    if (count > 20) {
+
+        count = 20;
+
+        input.value = 20;
+
+    }
+
+
+    autoSetTeamSizes();
+
+}
+
+
+/* =========================================
+   팀 이름
+========================================= */
+
+function teamName(index) {
+
+    return String.fromCharCode(
+        65 + index
+    ) + "팀";
+
+}
+
+
+/* =========================================
+   팀 인원 자동 계산
+========================================= */
+
+function autoSetTeamSizes() {
+
+    const teamCount =
+        Number(
+            document.getElementById(
+                "teamCount"
+            ).value
+        );
+
+
+    const container =
+        document.getElementById(
+            "teamSizes"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (teamCount < 1) return;
+
+
+    const base =
+        Math.floor(
+            players.length /
+            teamCount
+        );
+
+
+    const remainder =
+        players.length %
+        teamCount;
+
+
+    const sizes =
+        Array(teamCount)
+            .fill(base);
+
+
+    for (
+        let i = 0;
+        i < remainder;
+        i++
+    ) {
+
+        sizes[
+            teamCount - 1 - i
+        ]++;
+
+    }
+
+
+    sizes.forEach(
+        (size, index) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "team-size-row";
+
+
+            row.innerHTML = `
+                <span>
+                    ${teamName(index)}
+                </span>
+
+                <input
+                    class="team-size-input"
+                    type="number"
+                    min="0"
+                    value="${size}"
+                    id="teamSize${index}">
+            `;
+
+
+            container.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   제한 추가
+========================================= */
+
+function addBan() {
+
+    if (players.length < 2) {
+
+        alert(
+            "참가자가 2명 이상 필요합니다."
+        );
+
+        return;
+    }
+
+
+    const container =
+        document.getElementById(
+            "banList"
+        );
+
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "ban-row";
+
+
+    row.innerHTML = `
+        <select class="ban-player"></select>
+
+        <span>×</span>
+
+        <select class="ban-player"></select>
+
+        <button
+            onclick="this.parentElement.remove()">
+
+            ×
+
+        </button>
+    `;
+
+
+    container.appendChild(row);
+
+    updateBanSelects();
+
+}
+
+
+/* =========================================
+   제한 참가자 갱신
+========================================= */
+
+function updateBanSelects() {
+
+    document
+        .querySelectorAll(
+            ".ban-player"
+        )
+        .forEach(select => {
+
+            const oldValue =
+                select.value;
+
+
+            select.innerHTML = "";
+
+
+            players.forEach(
+                player => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        player;
+
+                    option.textContent =
+                        player;
+
+                    select.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            if (
+                players.includes(
+                    oldValue
+                )
+            ) {
+
+                select.value =
+                    oldValue;
+
+            }
+
+        });
+
+}
+
+
+/* =========================================
+   제한 가져오기
+========================================= */
+
+function getBannedPairs() {
+
+    const pairs = [];
+
+
+    document
+        .querySelectorAll(
+            ".ban-row"
+        )
+        .forEach(row => {
+
+            const selects =
+                row.querySelectorAll(
+                    "select"
+                );
+
+
+            if (
+                selects.length !== 2
+            ) return;
+
+
+            const a =
+                selects[0].value;
+
+            const b =
+                selects[1].value;
+
+
+            if (
+                a &&
+                b &&
+                a !== b
+            ) {
+
+                pairs.push([
+                    a,
+                    b
+                ]);
+
+            }
+
+        });
+
+
+    return pairs;
+
+}
+
+
+/* =========================================
+   팀 나누기
+========================================= */
+
+function makeTeams() {
+
+    const error =
+        document.getElementById(
+            "teamError"
+        );
+
+
+    error.textContent = "";
+
+
+    if (players.length === 0) {
+
+        error.textContent =
+            "참가자를 먼저 추가하세요.";
+
+        return;
+    }
+
+
+    const teamCount =
+        Number(
+            document.getElementById(
+                "teamCount"
+            ).value
+        );
+
+
+    const sizes = [];
+
+
+    for (
+        let i = 0;
+        i < teamCount;
+        i++
+    ) {
+
+        const size =
+            Number(
+                document.getElementById(
+                    `teamSize${i}`
+                ).value
+            );
+
+
+        if (
+            !Number.isInteger(size) ||
+            size < 0
+        ) {
+
+            error.textContent =
+                "팀 인원은 0 이상의 정수여야 합니다.";
+
+            return;
+        }
+
+
+        sizes.push(size);
+
+    }
+
+
+    const total =
+        sizes.reduce(
+            (a, b) => a + b,
+            0
+        );
+
+
+    if (
+        total !== players.length
+    ) {
+
+        error.textContent =
+            `팀 인원의 합계(${total}명)가 참가자 수(${players.length}명)와 같아야 합니다.`;
+
+        return;
+    }
+
+
+    const bannedPairs =
+        getBannedPairs();
+
+
+    for (
+        let attempt = 0;
+        attempt < 50000;
+        attempt++
+    ) {
+
+        const shuffled =
+            [...players].sort(
+                () =>
+                    Math.random() - .5
+            );
+
+
+        const teams = [];
+
+        let index = 0;
+
+
+        for (
+            let i = 0;
+            i < teamCount;
+            i++
+        ) {
+
+            teams.push(
+                shuffled.slice(
+                    index,
+                    index + sizes[i]
+                )
+            );
+
+
+            index += sizes[i];
+
+        }
+
+
+        if (
+            isValidTeams(
+                teams,
+                bannedPairs
+            )
+        ) {
+
+            showTeams(teams);
+
+            return;
+        }
+
+    }
+
+
+    error.textContent =
+        "조건을 만족하는 배정을 찾을 수 없습니다.";
+
+}
+
+
+/* =========================================
+   팀 검증
+========================================= */
+
+function isValidTeams(
+    teams,
+    bannedPairs
+) {
+
+    for (
+        const [a, b]
+        of bannedPairs
+    ) {
+
+        for (
+            const team
+            of teams
+        ) {
+
+            if (
+                team.includes(a) &&
+                team.includes(b)
+            ) {
+
+                return false;
+
+            }
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================
+   팀 결과 표시
+========================================= */
+
+function showTeams(teams) {
+
+    const result =
+        document.getElementById(
+            "teamResult"
+        );
+
+
+    result.innerHTML = "";
+
+
+    teams.forEach(
+        (team, index) => {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "team";
+
+
+            div.innerHTML = `
+                <h3>
+                    ${teamName(index)}
+                    · ${team.length}명
+                </h3>
+
+                ${team.map(
+                    member => `
+                        <div class="member">
+                            ${escapeHtml(member)}
+                        </div>
+                    `
+                ).join("")}
+            `;
+
+
+            result.appendChild(div);
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "teamResultCard"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================
+   슬롯 이름 렌더링
+========================================= */
+
+function renderSlotNames(names) {
+
+    const track =
+        document.getElementById(
+            "slotTrack"
+        );
+
+
+    track.innerHTML = "";
+
+
+    names.forEach(
+        (name, index) => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "slot-item";
+
+
+            item.dataset.index =
+                index;
+
+
+            item.textContent =
+                name;
+
+
+            track.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   슬롯 위치 이동
+========================================= */
+
+function moveSlot(
+    track,
+    index,
+    duration = 1000,
+    easing =
+        "cubic-bezier(.15,.8,.2,1)"
+) {
+
+    const item =
+        track.children[index];
+
+
+    if (!item) return;
+
+
+    const window =
+        document.getElementById(
+            "slotWindow"
+        );
+
+
+    const windowCenter =
+        window.clientHeight / 2;
+
+
+    const itemCenter =
+        item.offsetTop +
+        item.offsetHeight / 2;
+
+
+    const movement =
+        windowCenter -
+        itemCenter;
+
+
+    track.style.transition =
+        `transform ${duration}ms ${easing}`;
+
+
+    track.style.transform =
+        `translateY(${movement}px)`;
+
+}
+
+
+/* =========================================
+   한 명 뽑기
+========================================= */
+
+function drawOne() {
+
+    /*
+       추첨 중 재클릭 방지
+    */
+
+    if (isDrawing) return;
+
+
+    if (players.length === 0) {
+
+        showDrawError(
+            "참가자를 먼저 추가하세요."
+        );
+
+        return;
+    }
+
+
+    const noRepeat =
+        document.getElementById(
+            "noRepeat"
+        ).checked;
+
+
+    let candidates =
+        [...players];
+
+
+    if (noRepeat) {
+
+        candidates =
+            candidates.filter(
+                player =>
+                    !usedPlayers.includes(
+                        player
+                    )
+            );
+
+
+        if (
+            candidates.length === 0
+        ) {
+
+            showComplete();
+
+            return;
+        }
+
+    }
+
+
+    isDrawing = true;
+
+
+    const button =
+        document.getElementById(
+            "drawButton"
+        );
+
+
+    button.disabled = true;
+
+
+    const window =
+        document.getElementById(
+            "slotWindow"
+        );
+
+
+    const track =
+        document.getElementById(
+            "slotTrack"
+        );
+
+
+    window.classList.add(
+        "spinning"
+    );
+
+
+    clearDrawMessage();
+
+
+    /*
+       최종 당첨자 결정
+    */
+
+    const winner =
+        candidates[
+            Math.floor(
+                Math.random() *
+                candidates.length
+            )
+        ];
+
+
+    /*
+       긴 슬롯 목록 생성
+    */
+
+    const sequence = [];
+
+
+    for (
+        let i = 0;
+        i < 38;
+        i++
+    ) {
+
+        sequence.push(
+            candidates[
+                Math.floor(
+                    Math.random() *
+                    candidates.length
+                )
+            ]
+        );
+
+    }
+
+
+    /*
+       마지막은 당첨자
+    */
+
+    sequence.push(
+        winner
+    );
+
+
+    renderSlotNames(
+        sequence
+    );
+
+
+    /*
+       시작 위치
+    */
+
+    moveSlot(
+        track,
+        0,
+        0,
+        "linear"
+    );
+
+
+    /*
+       강제로 한 번 레이아웃 계산
+    */
+
+    void track.offsetHeight;
+
+
+    /*
+       빠르게 내려가기 시작
+    */
+
+    requestAnimationFrame(() => {
+
+        moveSlot(
+            track,
+            sequence.length - 8,
+            1900,
+            "cubic-bezier(.05,.7,.18,1)"
+        );
+
+
+        setTimeout(() => {
+
+            finishSlot(
+                candidates,
+                sequence,
+                winner,
+                noRepeat
+            );
+
+        }, 1900);
+
+    });
+
+}
+
+
+/* =========================================
+   마지막 정지
+========================================= */
+
+function finishSlot(
+    candidates,
+    sequence,
+    winner,
+    noRepeat
+) {
+
+    const track =
+        document.getElementById(
+            "slotTrack"
+        );
+
+
+    const winnerIndex =
+        sequence.length - 1;
+
+
+    /*
+       1/3 확률로
+       "딱 걸리는" 연출
+    */
+
+    const edge =
+        Math.random() < (1 / 3);
+
+
+    if (edge) {
+
+        /*
+           핵심:
+
+           실제 당첨자는 Ddd.
+
+           먼저 Ddd가 중앙이 아니라
+           바로 위 칸 쪽으로 살짝 치우친
+           상태에서 멈춘다.
+
+           화면상으로는
+
+               Xxx
+              Ddd
+               Sss
+
+           같은 애매한 위치가 된다.
+        */
+
+        moveSlot(
+            track,
+            winnerIndex - 1,
+            430,
+            "cubic-bezier(.18,.8,.25,1)"
+        );
+
+
+        /*
+           잠깐 걸쳐 있는 느낌
+        */
+
+        setTimeout(() => {
+
+            /*
+               Ddd를 중앙으로
+               사악하게 이동
+            */
+
+            moveSlot(
+                track,
+                winnerIndex,
+                620,
+                "cubic-bezier(.18,1.25,.35,1)"
+            );
+
+
+            setTimeout(() => {
+
+                showWinner(
+                    track,
+                    winnerIndex,
+                    winner,
+                    noRepeat
+                );
+
+            }, 650);
+
+        }, 420);
+
+
+    } else {
+
+        /*
+           일반적인 정지
+        */
+
+        moveSlot(
+            track,
+            winnerIndex,
+            900,
+            "cubic-bezier(.18,.8,.2,1)"
+        );
+
+
+        setTimeout(() => {
+
+            showWinner(
+                track,
+                winnerIndex,
+                winner,
+                noRepeat
+            );
+
+        }, 930);
+
+    }
+
+}
+
+
+/* =========================================
+   당첨 연출
+========================================= */
+
+function showWinner(
+    track,
+    winnerIndex,
+    winner,
+    noRepeat
+) {
+
+    const items =
+        track.querySelectorAll(
+            ".slot-item"
+        );
+
+
+    items.forEach(
+        (item, index) => {
+
+            if (
+                index === winnerIndex
+            ) {
+
+                item.classList.add(
+                    "final-winner"
+                );
+
+            } else {
+
+                item.classList.add(
+                    "final-other"
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+       중복 방지 기록
+    */
+
+    if (noRepeat) {
+
+        usedPlayers.push(
+            winner
+        );
+
+    }
+
+
+    /*
+       색종이 폭죽
+    */
+
+    createConfetti();
+
+
+    /*
+       결과 표시
+    */
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    message.className =
+        "draw-message success";
+
+
+    message.textContent =
+        `당첨: ${winner}`;
+
+
+    isDrawing = false;
+
+
+    document.getElementById(
+        "drawButton"
+    ).disabled = false;
+
+
+    /*
+       마지막 사람까지 뽑았을 경우
+    */
+
+    if (
+        noRepeat &&
+        usedPlayers.length >=
+            players.length
+    ) {
+
+        setTimeout(() => {
+
+            message.textContent =
+                "모든 참가자를 뽑았습니다.";
+
+
+            document
+                .getElementById(
+                    "restartDrawButton"
+                )
+                .classList.remove(
+                    "hidden"
+                );
+
+        }, 800);
+
+    }
+
+}
+
+
+/* =========================================
+   색종이
+========================================= */
+
+function createConfetti() {
+
+    let layer =
+        document.querySelector(
+            ".confetti-layer"
+        );
+
+
+    if (!layer) {
+
+        layer =
+            document.createElement(
+                "div"
+            );
+
+
+        layer.className =
+            "confetti-layer";
+
+
+        document.body.appendChild(
+            layer
+        );
+
+    }
+
+
+    const count = 80;
+
+
+    const colors = [
+        "#ffd83d",
+        "#ffbf00",
+        "#fff0a0",
+        "#eeeeee",
+        "#d6a900"
+    ];
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const piece =
+            document.createElement(
+                "div"
+            );
+
+
+        piece.className =
+            "confetti";
+
+
+        /*
+           위쪽 중앙 부근에서
+           샤라락 퍼짐
+        */
+
+        const startX =
+            50 +
+            (Math.random() * 20 - 10);
+
+
+        const spread =
+            (Math.random() * 2 - 1)
+            * 100;
+
+
+        const rotate =
+            Math.random() * 1100 -
+            550;
+
+
+        const time =
+            1.7 +
+            Math.random() * 1.8;
+
+
+        piece.style.left =
+            `${startX}%`;
+
+
+        piece.style.background =
+            colors[
+                Math.floor(
+                    Math.random() *
+                    colors.length
+                )
+            ];
+
+
+        piece.style.setProperty(
+            "--x",
+            `${spread}vw`
+        );
+
+
+        piece.style.setProperty(
+            "--rotate",
+            `${rotate}deg`
+        );
+
+
+        piece.style.setProperty(
+            "--fall-time",
+            `${time}s`
+        );
+
+
+        piece.style.width =
+            `${5 + Math.random() * 6}px`;
+
+
+        piece.style.height =
+            `${8 + Math.random() * 8}px`;
+
+
+        piece.style.animationDelay =
+            `${Math.random() * .18}s`;
+
+
+        layer.appendChild(
+            piece
+        );
+
+
+        setTimeout(() => {
+
+            piece.remove();
+
+        }, (time + .5) * 1000);
+
+    }
+
+}
+
+
+/* =========================================
+   오류
+========================================= */
+
+function showDrawError(text) {
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    message.className =
+        "draw-message error";
+
+
+    message.textContent =
+        text;
+
+}
+
+
+/* =========================================
+   메시지 초기화
+========================================= */
+
+function clearDrawMessage() {
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    message.textContent = "";
+
+    message.className =
+        "draw-message";
+
+}
+
+
+/* =========================================
+   모두 뽑음
+========================================= */
+
+function showComplete() {
+
+    const message =
+        document.getElementById(
+            "drawMessage"
+        );
+
+
+    message.className =
+        "draw-message success";
+
+
+    message.textContent =
+        "모든 참가자를 뽑았습니다.";
+
+
+    document
+        .getElementById(
+            "restartDrawButton"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================
+   다시 시작
+========================================= */
+
+function restartDraw() {
+
+    if (isDrawing) return;
+
+
+    usedPlayers = [];
+
+
+    const track =
+        document.getElementById(
+            "slotTrack"
+        );
+
+
+    const window =
+        document.getElementById(
+            "slotWindow"
+        );
+
+
+    track.style.transition =
+        "none";
+
+
+    track.style.transform =
+        "translateY(0)";
+
+
+    track.innerHTML = "";
+
+
+    window.classList.remove(
+        "spinning"
+    );
+
+
+    clearDrawMessage();
+
+
+    document
+        .getElementById(
+            "restartDrawButton"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "drawButton"
+        )
+        .disabled = false;
+
+}
+
+
+/* =========================================
+   HTML 보안 처리
+========================================= */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   초기화
+========================================= */
+
+renderPlayers();
+
+autoSetTeamSizes();
+
+</script>
+
+</body>
+</html>
